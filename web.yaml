@@ -1,0 +1,44 @@
+---
+ - name: web application handler example
+   hosts: "all"
+   vars:
+     webpkg: httpd
+     webfile: /var/www/html/index.html
+     websvc: httpd
+     webconf: /etc/httpd/conf/httpd.conf
+   tasks:
+    - name: start my "{{webpkg}}" setup on "{{ansible_facts['hostname']}}"
+      debug:
+       msg: my "{{webpkg}}" set has been initated on "{{ansible_facts['hostname']}}"
+    - name: Install "{{webpkg}}"
+      yum:
+        name: "{{webpkg}}"
+        state: present
+      register: pkgoutput
+    - name: Configure "{{webfile}}"
+      copy:
+        dest: "{{webfile}}"
+        content: 'This is my complete playbook having handlers'
+      register: indexoutput
+    - name: Replace port in "{{webconf}}"
+      lineinfile:
+        path: "{{webconf}}"
+        regexp: "Listen 80"
+        line:  Listen 81
+      register: confoutput
+      notify:
+       - httpd restart
+    - name: Debug Config output
+      debug:
+        var: confoutput
+
+    - name: Debug Config output
+      debug:
+        var: pkgoutput
+
+   handlers:
+     - name: httpd restart
+       service:
+         name: "{{websvc}}"
+         state: restarted
+         enabled: true   
