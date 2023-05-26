@@ -1,0 +1,3 @@
+#ansible file for lab
+[worker]
+kunalworker
